@@ -20,7 +20,7 @@ class PurchaseTicketTest extends TestCase
 
         $paymentGateway = new FakePaymentGateway;
 
-        $this->app->instance(PaymentGateway::class , $paymentGateway);
+        $this->app->instance(PaymentGateway::class, $paymentGateway);
 
         $concert = factory(Concert::class)->states('published')->create([
             'ticket_price' => 6770
@@ -28,7 +28,7 @@ class PurchaseTicketTest extends TestCase
 
         // Act
         // Purchase the ticket
-        $this->post( "/concerts/{$concert->id}/orders", [
+        $this->post("/concerts/{$concert->id}/orders", [
             'email' => 'hs.jamal@gmail.com',
             'ticket_quantity' => 2,
             'payment_token' => $paymentGateway->getValidTestToken()
@@ -38,13 +38,13 @@ class PurchaseTicketTest extends TestCase
 
         // Assert
         // Make sure the customer was charged with correct amount
-        $this->assertEquals(13540 , $paymentGateway->totalCharge());
+        $this->assertEquals(13540, $paymentGateway->totalCharge());
 
-        $order = $concert->orders()->where('email' , 'hs.jamal@gmail.com')->first();
+        $order = $concert->orders()->where('email', 'hs.jamal@gmail.com')->first();
 
         // Make sure that order exists for this customer
         $this->assertNotNull($order);
         // we can also verify tickets counts
-        $this->assertEquals(2 , $order->tickets->counts());
+        $this->assertEquals(2, $order->tickets->count());
     }
 }

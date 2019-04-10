@@ -21,11 +21,15 @@ class Concert extends Model
     }
     public function getPriceInDollarAttribute()
     {
-        return number_format($this->ticket_price /100 ,2);
+        return number_format($this->ticket_price /100, 2);
     }
 
     public function scopePublished($query)
     {
         return $query->whereNotNull('published_at');
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
 }
