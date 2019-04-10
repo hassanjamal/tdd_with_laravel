@@ -35,9 +35,6 @@ class Handler extends ExceptionHandler
      */
     public function report(Exception $exception)
     {
-        if(App::environment('testing')){
-            throw $exception;
-        }
         parent::report($exception);
     }
 
