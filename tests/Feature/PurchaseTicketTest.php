@@ -2,6 +2,8 @@
 
 namespace Tests\Feature;
 
+use App\Billing\FakePaymentGateway;
+use App\Billing\PaymentGateway;
 use App\Concert;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
@@ -14,6 +16,11 @@ class PurchaseTicketTest extends TestCase
     /** @test */
     public function customer_can_purchase_concert_tickets()
     {
+        $this->withoutExceptionHandling();
+
+        $paymentGateway = new FakePaymentGateway;
+
+        $this->app->instance(PaymentGateway::class , $paymentGateway);
 
         $concert = factory(Concert::class)->states('published')->create([
             'ticket_price' => 6770
@@ -21,11 +28,13 @@ class PurchaseTicketTest extends TestCase
 
         // Act
         // Purchase the ticket
-        $this->json('POST', "/concerts/{$concert->id}/orders", [
+        $this->post( "/concerts/{$concert->id}/orders", [
             'email' => 'hs.jamal@gmail.com',
             'ticket_quantity' => 2,
             'payment_token' => $paymentGateway->getValidTestToken()
-        ]);
+        ])->assertStatus(200);
+
+
 
         // Assert
         // Make sure the customer was charged with correct amount
