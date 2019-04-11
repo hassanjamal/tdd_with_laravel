@@ -38,7 +38,7 @@ class ConcertTest extends TestCase
         $concert = factory(Concert::class)->make([
             'ticket_price' => 6750
         ]);
-        $this->assertEquals('67.50' , $concert->price_in_dollar);
+        $this->assertEquals('67.50', $concert->price_in_dollar);
     }
 
     /** @test */
@@ -53,19 +53,14 @@ class ConcertTest extends TestCase
         $this->assertTrue($concerts->contains($publishedConcertA));
         $this->assertTrue($concerts->contains($publishedConcertB));
         $this->assertFalse($concerts->contains($unPublishedConcert));
-
     }
 
     /** @test */
     public function can_order_concert_tickets()
     {
         $concert = factory(Concert::class)->create();
-
         $order = $concert->orderTickets('hs.jamal@gmail.com', 3);
-
         $this->assertEquals('hs.jamal@gmail.com', $order->email);
-
         $this->assertEquals(3, $order->tickets()->count());
-
     }
 }
