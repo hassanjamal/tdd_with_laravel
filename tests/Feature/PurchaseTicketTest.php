@@ -2,13 +2,11 @@
 
 namespace Tests\Feature;
 
-use App\Billing\FakePaymentGateway;
-use App\Billing\PaymentGateway;
 use App\Concert;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
-use Illuminate\Foundation\Testing\WithFaker;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Billing\PaymentGateway;
+use App\Billing\FakePaymentGateway;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class PurchaseTicketTest extends TestCase
 {
@@ -114,6 +112,24 @@ class PurchaseTicketTest extends TestCase
         $this->assertValidationError($response, 'payment_token');
     }
 
+    /** @test */
+    public function an_order_is_not_created_if_payment_token_is_invalid()
+    {
+        $this->withoutExceptionHandling();
+
+        $concert = factory(Concert::class)->create();
+
+        $response = $this->orderTicket($concert, [
+            'email' => 'demo@exmaple.com',
+            'ticket_quantity' => 1,
+            'payment_token' => 'some-invalid-token'
+        ]);
+
+        $response->assertStatus(422);
+        $order = $concert->orders()->where('email', 'demo@example.com')->first();
+        $this->assertNull($order);
+    }
+
     /**
      * @param $concert
      * @param $params
@@ -128,7 +144,7 @@ class PurchaseTicketTest extends TestCase
     /**
      * @param $response
      */
-    private function assertValidationError($response , $field): void
+    private function assertValidationError($response, $field): void
     {
         $response->assertStatus(422);
         $this->assertArrayHasKey($field, (array)json_decode($response->getContent())->errors);
