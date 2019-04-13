@@ -4,10 +4,11 @@ namespace Tests\Unit;
 
 use App\Concert;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Tests\TestCase;
+use App\Billing\NotEnoughTicketException;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseMigrations;
 
 class ConcertTest extends TestCase
 {
@@ -59,6 +60,7 @@ class ConcertTest extends TestCase
     public function can_order_concert_tickets()
     {
         $concert = factory(Concert::class)->create();
+        $concert->addTickets(15);
         $order = $concert->orderTickets('hs.jamal@gmail.com', 3);
         $this->assertEquals('hs.jamal@gmail.com', $order->email);
         $this->assertEquals(3, $order->tickets()->count());
@@ -70,9 +72,9 @@ class ConcertTest extends TestCase
         $concert = factory(Concert::class)->create();
         $concert->addTickets(10);
         $this->assertEquals(10, $concert->remainingTickets());
-    }   
+    }
     /** @test */
-    function tickets_remaining_does_not_include_tickets_associated_with_an_order()
+    public function tickets_remaining_does_not_include_tickets_associated_with_an_order()
     {
         $concert = factory(Concert::class)->create();
         $concert->addTickets(50);
@@ -80,5 +82,19 @@ class ConcertTest extends TestCase
 
         $this->assertEquals(10, $concert->remainingTickets());
     }
-
+    /** @test */
+    public function trying_to_purchase_more_tickets_than_remain_throws_an_exception()
+    {
+        $concert = factory(Concert::class)->create();
+        $concert->addTickets(50);
+        try {
+            $concert->orderTickets('hs.jamal@gmail.com', 55);
+         } catch (NotEnoughTicketException $e) {
+             $order = $concert->orders()->whereEmail('hs.jamal@gmail.com')->first();
+             $this->assertNull($order);
+             $this->assertEquals(50, $concert->remainingTickets());
+            return;
+        }
+        $this->fail('Order succeeded even though there were not enough tickets');
+    }
 }

@@ -27,6 +27,7 @@ class PurchaseTicketTest extends TestCase
         $concert = factory(Concert::class)->states('published')->create([
             'ticket_price' => 6770
         ]);
+        $concert->addTickets(10);
 
         $this->post("/concerts/{$concert->id}/orders", [
             'email' => 'hs.jamal@gmail.com',

@@ -21,7 +21,9 @@ class FakePaymentGatewayTest extends TestCase
 
     }
 
-    /** @test */
+    /** @test
+     * @doesNotPerformAssertions
+     */
     function a_charge_can_not_be_created_if_a_invalid_payment_token_is_provided()
     {
         $paymentGateway = new FakePaymentGateway;
